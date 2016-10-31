@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iostream>
 #include "Function.h"
+using namespace std;
+
+typedef vector<bool> BVec;
 
 Function::Function(string inFile) {
     ifstream inStream(inFile);
@@ -36,16 +39,54 @@ Function::Function(string inFile) {
 
 }
 
-void Function::Printf() const {
-    cout << vSize_ << "\t" << dSize_ << endl << flush;
-    for (const auto &t:f_)
-        cout << t << "\t";
-    cout << endl << flush;
+template<typename T>
+void printVec(const vector<T> &v, const string &tag, const string &delim = " ", ostream &oH = cout) {
+    oH << tag;
+    for (const auto &t:v)
+        oH << delim << t;
+
+    oH << endl << flush;
+}
+
+bool nextInput(BVec *vec) {
+    BVec &v = *vec;
+    int index = v.size() - 1;
+    while ((index >= 0) && (v[index])) {
+        v[index] = false;
+        --index;
+    }
+
+    if (index >= 0) {
+        v[index] = true;
+        return true;
+    }
+
+    return false;
+}
+
+Function::Function(function<double (const BVec&)> f, int numVar){
+    vSize_ = numVar;
+    BVec currInput(numVar, false);
+    f_.push_back(f(currInput));
+    F_.push_back(f(currInput));
+    dSize_ = 1;
+    while (nextInput(&currInput)) {
+        f_.push_back(f(currInput));
+        F_.push_back(f(currInput));
+        dSize_++;
+    }
 }
 
 void Function::PrintF() const {
 //    cout << vSize_ << "\t" << dSize_ << endl << flush;
     for (const auto &t:F_)
+        cout << t << "\t";
+    cout << endl << flush;
+}
+
+void Function::Printf() const {
+    cout << vSize_ << "\t" << dSize_ << endl << flush;
+    for (const auto &t:f_)
         cout << t << "\t";
     cout << endl << flush;
 }
